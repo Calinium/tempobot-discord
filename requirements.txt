@@ -1,0 +1,6 @@
+discord.py
+asyncio
+PyNaCl
+google-api-python-client
+virtualenv
+youtube-dl==2021.12.17

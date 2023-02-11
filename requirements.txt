@@ -3,4 +3,5 @@ asyncio
 PyNaCl
 google-api-python-client
 virtualenv
+python-dotenv
 youtube-dl==2021.12.17

@@ -214,9 +214,7 @@ async def play(i: discord.Interaction, search: str):
     try:
         songQueue[i.guild_id].append(url+"#SpAcEoFuRlAnDtItLe#"+title)
     except KeyError:
-        songQueue[i.guild_id] = [url+"#SpAcEoFuRlAnDtItLe#"+title]        
-
-    print(songQueue)
+        songQueue[i.guild_id] = [url+"#SpAcEoFuRlAnDtItLe#"+title]
 
     if vc.is_playing() or len(songQueue[i.guild_id]) >= 2:
         await i.followup.send(content= f'✅ 재생목록에 추가됨 : **{title}**')

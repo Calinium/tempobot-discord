@@ -1,4 +1,5 @@
 from os import environ
+import dotenv
 import asyncio
 import discord
 from discord import app_commands
@@ -8,14 +9,11 @@ from youtube_dl import YoutubeDL #version 2021.12.17
 
 bot = commands.Bot(command_prefix='$', intents=discord.Intents.all())
 
-try:
-    with open("TOKEN.txt", "r") as f:
-        text = f.readlines()
-        DISCORD_TOKEN = text[0].strip()
-        youtube_api_key = text[1].strip()
-except FileNotFoundError:
-    DISCORD_TOKEN = environ["TOKEN"]
-    youtube_api_key = environ["YOUTUBE_API_KEY"]
+dotenv_file = dotenv.find_dotenv()
+dotenv.load_dotenv(dotenv_file)
+
+DISCORD_TOKEN = environ["TOKEN"]
+youtube_api_key = environ["YOUTUBE_API_KEY"]
 
 youtube = build('youtube','v3', developerKey=youtube_api_key)
 

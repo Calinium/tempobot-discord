@@ -5,7 +5,8 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from googleapiclient.discovery import build
-from youtube_dl import YoutubeDL #version 2021.12.17
+from yt_dlp import YoutubeDL #version 2021.12.17
+
 
 bot = commands.Bot(command_prefix='$', intents=discord.Intents.all())
 
@@ -17,7 +18,12 @@ youtube_api_key = environ["YOUTUBE_API_KEY"]
 
 youtube = build('youtube','v3', developerKey=youtube_api_key)
 
-YDL_OPTIONS = {'format': 'bestaudio', 'noplaylist':'True'}
+YDL_OPTIONS = {
+    'format': 'bestaudio', 
+    'noplaylist':'True', 
+    'quiet':'True',
+    'skip_download':'True'
+    }
 
 FFMPEG_OPTIONS = {
     'options': '-vn',
@@ -64,7 +70,6 @@ async def on_voice_state_update(member, before, after):
                 if (mem.bot==False): #한명이라도 사람이라면
                     return
             #for문 끝날때까지 사람 검색을 못하면
-            print(f"{bot_connection.channel}에서 연결 종료함.")
             await bot_connection.disconnect()
             resetQueue(member.guild.id)
 
@@ -183,8 +188,10 @@ async def play(i: discord.Interaction, search: str):
         q = search,
         order = "relevance",
         part = "snippet",
-        maxResults = 3
+        maxResults = 3,
+        regionCode = "KR"
     ).execute()
+    
     for result in search_response['items']: #나온 결과들을 하나하나 분석함
         try: #비디오 링크 제작 시도
             videolink = ('https://www.youtube.com/watch?v=' + result['id']['videoId'])
@@ -204,7 +211,7 @@ async def play(i: discord.Interaction, search: str):
             await i.followup.send('❌ 죄송합니다. 음악을 찾지 못했습니다')
             return
 
-    url = info['formats'][0]['url']
+    url = info['formats'][4]['url']
 
     try:
         loop[i.guild_id]

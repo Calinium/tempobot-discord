@@ -192,25 +192,23 @@ async def play(i: discord.Interaction, search: str):
         regionCode = "KR"
     ).execute()
 
-    candidate = {}
+    candidate = []
 
     for result in search_response['items']: #나온 결과들을 하나하나 분석함
         try: #비디오 링크 제작 시도
             videolink = ('https://www.youtube.com/watch?v=' + result['id']['videoId'])
-            title: str = result['snippet']['title']
-            title.replace("&#39;", "'")
-            title.replace("&quot;", '"')
 
-            candidate[videolink] = title
+            candidate.append(videolink)
         except: 
             pass
-    if videolink == '':
+
+    if candidate == []:
         await i.followup.send('❌ 죄송합니다. 음악을 찾지 못했습니다')
         return
     
     info = None
 
-    for videolink in candidate.keys():
+    for videolink in candidate:
         with YoutubeDL(YDL_OPTIONS) as ydl:
             try:
                 info = ydl.extract_info(videolink, download=False) #만들어진 비디오링크로 음악 정보를 추출함
@@ -223,6 +221,7 @@ async def play(i: discord.Interaction, search: str):
         return
     else:
         url = info['formats'][4]['url']
+        title = info['title']
 
     try:
         loop[i.guild_id]

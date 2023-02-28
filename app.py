@@ -5,10 +5,10 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from googleapiclient.discovery import build
-from yt_dlp import YoutubeDL #version 2021.12.17
+from yt_dlp import YoutubeDL, DownloadError
 
 
-bot = commands.Bot(command_prefix='$', intents=discord.Intents.all())
+bot = commands.Bot(command_prefix='!', intents=discord.Intents.all())
 
 dotenv_file = dotenv.find_dotenv()
 dotenv.load_dotenv(dotenv_file)
@@ -191,27 +191,38 @@ async def play(i: discord.Interaction, search: str):
         maxResults = 3,
         regionCode = "KR"
     ).execute()
-    
+
+    candidate = {}
+
     for result in search_response['items']: #나온 결과들을 하나하나 분석함
         try: #비디오 링크 제작 시도
             videolink = ('https://www.youtube.com/watch?v=' + result['id']['videoId'])
             title: str = result['snippet']['title']
             title.replace("&#39;", "'")
-            break
+            title.replace("&quot;", '"')
+
+            candidate[videolink] = title
         except: 
             pass
     if videolink == '':
         await i.followup.send('❌ 죄송합니다. 음악을 찾지 못했습니다')
         return
+    
+    info = None
 
-    with YoutubeDL(YDL_OPTIONS) as ydl:
-        try:
-            info = ydl.extract_info(videolink, download=False) #만들어진 비디오링크로 음악 정보를 추출함
-        except commands.CommandInvokeError:
-            await i.followup.send('❌ 죄송합니다. 음악을 찾지 못했습니다')
-            return
-
-    url = info['formats'][4]['url']
+    for videolink in candidate.keys():
+        with YoutubeDL(YDL_OPTIONS) as ydl:
+            try:
+                info = ydl.extract_info(videolink, download=False) #만들어진 비디오링크로 음악 정보를 추출함
+                break
+            except commands.CommandInvokeError or DownloadError:
+                continue
+                
+    if info == None:
+        await i.followup.send('❌ 죄송합니다. 음악을 찾지 못했습니다')
+        return
+    else:
+        url = info['formats'][4]['url']
 
     try:
         loop[i.guild_id]
